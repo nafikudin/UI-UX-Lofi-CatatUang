@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mid-Fi Prototype - CatatUang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007BFF;
+            --primary-light: #e6f2ff;
+            --bg-color: #f4f7fa;
+            --surface-color: #ffffff;
+            --text-primary: #121212;
+            --text-secondary: #6c757d;
+            --border-color: #dee2e6;
+            --accent-income: #28a745;
+            --accent-expense: #dc3545;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .phone-mockup {
+            width: 100%;
+            max-width: 400px;
+            height: 850px;
+            border: 8px solid #121212;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            background-color: var(--bg-color);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: var(--bg-color);
+            transition: opacity 0.3s ease;
+        }
+        
+        .screen.active {
+            display: flex;
+        }
+        
+        .header {
+            padding: 20px;
+            background-color: var(--surface-color);
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 600;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .header .back-button {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            padding: 5px;
+        }
+        .header .back-button svg { width: 24px; height: 24px; }
+
+        .main-content {
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+        .main-content::-webkit-scrollbar { display: none; }
+
+        /* Dashboard Screen Specifics */
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .app-logo {
+            width: 50px;
+            height: 50px;
+            flex-shrink: 0;
+            margin-right: 15px;
+        }
+        .greeting h2 { margin: 0; font-size: 1.5em; font-weight: 700; }
+        .greeting p { margin: 0; color: var(--text-secondary); font-size: 0.9em; }
+
+        .summary-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .summary-card {
+            background-color: var(--surface-color);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+        }
+        .summary-card.full-width {
+            grid-column: 1 / -1;
+            text-align: center;
+            background-image: linear-gradient(45deg, var(--primary-color), #0056b3);
+            color: white;
+        }
+        .summary-card.full-width h3 { color: rgba(255, 255, 255, 0.8); }
+        .summary-card h3 { margin: 0 0 5px 0; font-size: 0.9em; font-weight: 500; color: var(--text-secondary); }
+        .summary-card p { margin: 0; font-size: 1.6em; font-weight: 600; }
+        .summary-card .income { color: var(--accent-income); }
+        .summary-card .expense { color: var(--accent-expense); }
+
+        .section-title { font-weight: 600; margin-bottom: 10px; font-size: 1.1em; }
+
+        .transaction-list .item {
+            display: flex;
+            align-items: center;
+            background-color: var(--surface-color);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        .transaction-list .item-icon {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+        }
+        .transaction-list .item-icon svg { width: 20px; height: 20px; }
+        .transaction-list .details { flex-grow: 1; }
+        .transaction-list .details p { margin: 0; }
+        .transaction-list .details .category { font-weight: 600; }
+        .transaction-list .details .wallet { font-size: 0.8em; color: var(--text-secondary); }
+        .transaction-list .amount { font-weight: 600; font-size: 1em; }
+        .transaction-list .amount.income { color: var(--accent-income); }
+        .transaction-list .amount.expense { color: var(--accent-expense); }
+
+        /* Form Screen */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-secondary); }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            font-size: 1em;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        .type-toggle { display: flex; gap: 10px; }
+        .type-toggle button {
+            flex: 1; padding: 12px; border: 1px solid var(--border-color);
+            background-color: var(--surface-color); border-radius: 8px;
+            cursor: pointer; font-size: 1em; font-weight: 500; transition: all 0.3s;
+        }
+        .type-toggle button.active {
+            background-color: var(--primary-color);
+            color: white; border-color: var(--primary-color);
+        }
+        .btn-primary {
+            width: 100%; padding: 15px; border-radius: 8px;
+            font-size: 1.1em; font-weight: 600; cursor: pointer;
+            background-color: var(--primary-color); color: white;
+            border: none; transition: background-color 0.3s;
+        }
+        .btn-primary:hover { background-color: #0056b3; }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 70px;
+            background-color: var(--surface-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.3s;
+        }
+        .nav-item.active, .nav-item:hover { color: var(--primary-color); }
+        .nav-item svg { width: 24px; height: 24px; margin-bottom: 2px; }
+        .nav-item span { font-size: 0.75em; font-weight: 500; }
+        #nav-add-btn {
+            width: 60px; height: 60px;
+            background-image: linear-gradient(45deg, var(--primary-color), #0056b3);
+            color: white; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
+            margin-top: -30px; cursor: pointer;
+        }
+        #nav-add-btn svg { width: 30px; height: 30px; }
+    </style>
+</head>
+<body>
+
+    <div class="phone-mockup">
+        <!-- ==== LAYAR 1: DASHBOARD (TAMPILAN UTAMA) ==== -->
+        <div id="dashboardScreen" class="screen active">
+            <div class="main-content">
+                <div class="dashboard-header">
+                    <svg class="app-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="48" fill="var(--primary-color)"/>
+                        <text x="50" y="62" font-family="Poppins, sans-serif" font-size="40" font-weight="700" fill="white" text-anchor="middle">CU</text>
+                    </svg>
+                    <div class="greeting">
+                        <h2>CatatUang</h2>
+                        <p>Selamat datang kembali!</p>
+                    </div>
+                </div>
+
+                <div class="summary-container">
+                    <div class="summary-card full-width">
+                        <h3>Total Saldo</h3>
+                        <p>Rp 2.550.000</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Pemasukan</h3>
+                        <p class="income">Rp 5.000.000</p>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Pengeluaran</h3>
+                        <p class="expense">Rp 2.450.000</p>
+                    </div>
+                </div>
+
+                <div class="section-title">Transaksi Terkini</div>
+                <div class="transaction-list">
+                    <div class="item">
+                        <div class="item-icon" style="background-color: #fff0dd;"><svg viewBox="0 0 24 24" fill="#fd7e14"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M12 17.5c2.49 0 4.5-2.01 4.5-4.5S14.49 8.5 12 8.5 7.5 10.51 7.5 13s2.01 4.5 4.5 4.5z"/></svg></div>
+                        <div class="details"><p class="category">Makan Siang</p><p class="wallet">Dompet Tunai</p></div>
+                        <div class="amount expense">- Rp 25.000</div>
+                    </div>
+                    <div class="item">
+                        <div class="item-icon" style="background-color: #d1e7dd;"><svg viewBox="0 0 24 24" fill="#198754"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg></div>
+                        <div class="details"><p class="category">Gaji Bulanan</p><p class="wallet">Rekening BCA</p></div>
+                        <div class="amount income">+ Rp 5.000.000</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==== LAYAR 2: FORM TAMBAH/EDIT TRANSAKSI ==== -->
+        <div id="formScreen" class="screen">
+            <div class="header">
+                <span class="back-button" onclick="goBack()"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></span>
+                Tambah Transaksi
+            </div>
+            <div class="main-content">
+                <div class="form-group">
+                    <div class="type-toggle">
+                        <button id="btnExpense" class="active">Pengeluaran</button>
+                        <button id="btnIncome">Pemasukan</button>
+                    </div>
+                </div>
+                <div class="form-group"><label>Jumlah</label><input type="text" placeholder="Rp 0"></div>
+                <div class="form-group"><label>Kategori</label><select id="categorySelect"></select></div>
+                <div class="form-group"><label>Dompet</label><select><option>Dompet Tunai</option><option>Rekening BCA</option></select></div>
+                <div class="form-group"><label>Tanggal</label><input type="date" id="dateInput"></div>
+                <div class="form-group"><label>Catatan (Opsional)</label><input type="text" placeholder="Makan siang di warteg"></div>
+                <button class="btn-primary" onclick="alert('Transaksi Tersimpan!'); goBack();">Simpan Transaksi</button>
+            </div>
+        </div>
+
+        <!-- ==== LAYAR 3: RIWAYAT SEMUA TRANSAKSI ==== -->
+        <div id="historyScreen" class="screen">
+            <div class="header">Riwayat Transaksi</div>
+            <div class="main-content">
+                 <div class="section-title">November 2025</div>
+                <div class="transaction-list">
+                    <div class="item">
+                        <div class="item-icon" style="background-color: #fff0dd;"><svg viewBox="0 0 24 24" fill="#fd7e14"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><path d="M12 17.5c2.49 0 4.5-2.01 4.5-4.5S14.49 8.5 12 8.5 7.5 10.51 7.5 13s2.01 4.5 4.5 4.5z"/></svg></div>
+                        <div class="details"><p class="category">Makan Siang</p><p class="wallet">Dompet Tunai</p></div>
+                        <div class="amount expense">- Rp 25.000</div>
+                    </div>
+                     <div class="item">
+                        <div class="item-icon" style="background-color: #cff4fc;"><svg viewBox="0 0 24 24" fill="#0dcaf0"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg></div>
+                        <div class="details"><p class="category">Beli Pulsa</p><p class="wallet">GoPay</p></div>
+                        <div class="amount expense">- Rp 52.000</div>
+                    </div>
+                    <div class="item">
+                        <div class="item-icon" style="background-color: #d1e7dd;"><svg viewBox="0 0 24 24" fill="#198754"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5zm4 4h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg></div>
+                        <div class="details"><p class="category">Gaji Bulanan</p><p class="wallet">Rekening BCA</p></div>
+                        <div class="amount income">+ Rp 5.000.000</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigasi Bawah -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-screen="dashboardScreen">
+                <svg fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>Beranda</span>
+            </div>
+            <div id="nav-add-btn" data-screen="formScreen">
+                <svg fill="currentColor" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            </div>
+            <div class="nav-item" data-screen="historyScreen">
+                <svg fill="currentColor" viewBox="0 0 24 24"><path d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+                <span>Riwayat</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const allScreens = document.querySelectorAll('.screen');
+        const navItems = document.querySelectorAll('.nav-item, #nav-add-btn');
+        let screenHistory = ['dashboardScreen']; // Lacak riwayat layar untuk tombol kembali
+
+        function navigateTo(screenId) {
+            allScreens.forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+
+            if (screenHistory[screenHistory.length - 1] !== screenId) {
+                if(screenId !== 'formScreen'){ // Jangan tambahkan form ke history permanen nav
+                   screenHistory = [screenId];
+                } else {
+                   screenHistory.push(screenId);
+                }
+            }
+
+            // Update status aktif nav item
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.screen === screenId) {
+                    item.classList.add('active');
+                }
+                 // Tetap aktifkan nav beranda jika di form
+                if (screenId === 'formScreen' && item.dataset.screen === 'dashboardScreen') {
+                     // Biarkan nav item sebelumnya aktif
+                }
+            });
+             document.querySelector('.nav-item[data-screen="dashboardScreen"]').classList.add('active');
+             if(screenId === 'historyScreen'){
+                 document.querySelector('.nav-item[data-screen="dashboardScreen"]').classList.remove('active');
+                 document.querySelector('.nav-item[data-screen="historyScreen"]').classList.add('active');
+             }
+        }
+        
+        function goBack() {
+            if (screenHistory.length > 1) {
+                screenHistory.pop(); // Hapus layar saat ini
+                const previousScreen = screenHistory[screenHistory.length - 1]; // Ambil layar sebelumnya
+                navigateTo(previousScreen);
+            }
+        }
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const screenId = item.dataset.screen;
+                if (screenId) {
+                    navigateTo(screenId);
+                }
+            });
+        });
+
+        // Kategori Toggle Logic
+        const btnExpense = document.getElementById('btnExpense');
+        const btnIncome = document.getElementById('btnIncome');
+        const categorySelect = document.getElementById('categorySelect');
+        const expenseCategories = ['Makanan', 'Transportasi', 'Tagihan', 'Hiburan', 'Belanja'];
+        const incomeCategories = ['Gaji', 'Bonus', 'Hadiah', 'Penjualan'];
+
+        function updateCategoryOptions(type) {
+            categorySelect.innerHTML = '';
+            const categories = (type === 'expense') ? expenseCategories : incomeCategories;
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat;
+                option.textContent = cat;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        btnExpense.addEventListener('click', () => {
+            btnExpense.classList.add('active');
+            btnIncome.classList.remove('active');
+            updateCategoryOptions('expense');
+        });
+
+        btnIncome.addEventListener('click', () => {
+            btnIncome.classList.add('active');
+            btnExpense.classList.remove('active');
+            updateCategoryOptions('income');
+        });
+
+        document.getElementById('dateInput').valueAsDate = new Date();
+        updateCategoryOptions('expense');
+    </script>
+</body>
+</html>
